@@ -605,11 +605,11 @@ namespace FixMath.NET {
 
 
 
-        public static explicit operator Fix64(long value) {
+        public static explicit operator Fix64(int value) {
             return new Fix64(value * ONE);
         }
-        public static explicit operator long(Fix64 value) {
-            return value.m_rawValue >> FRACTIONAL_PLACES;
+        public static explicit operator int(Fix64 value) {
+            return (int)(value.m_rawValue >> FRACTIONAL_PLACES);
         }
         public static explicit operator Fix64(float value) {
             return new Fix64((long)(value * ONE));

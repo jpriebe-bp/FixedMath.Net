@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixedMath.NET", "FixedMath.NET.csproj", "{D46C606E-5826-465F-9983-251E3D3B2F1C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "..\Tests\Tests.fsproj", "{389AC3B6-8FA5-4475-9283-C7267FD0D695}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +17,10 @@ Global
 		{D46C606E-5826-465F-9983-251E3D3B2F1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D46C606E-5826-465F-9983-251E3D3B2F1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D46C606E-5826-465F-9983-251E3D3B2F1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389AC3B6-8FA5-4475-9283-C7267FD0D695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389AC3B6-8FA5-4475-9283-C7267FD0D695}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389AC3B6-8FA5-4475-9283-C7267FD0D695}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389AC3B6-8FA5-4475-9283-C7267FD0D695}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
