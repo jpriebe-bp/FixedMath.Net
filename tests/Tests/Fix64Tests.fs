@@ -35,8 +35,7 @@ let testCases = [|
     // Tiny random numbers
     - 171L;
     -359L; 491L; 844L; 158L; -413L; -422L; -737L; -575L; -330L;
-    -376L; 435L; -311L; 116L; 715L; -1024L; -487L; 59L; 724L; 993L;
-|]
+    -376L; 435L; -311L; 116L; 715L; -1024L; -487L; 59L; 724L; 993L; |] |> Array.map Fix64.FromRaw
 
 let int32max = int64 Int32.MaxValue
 let int32min = int64 Int32.MinValue
@@ -45,6 +44,10 @@ let int64min = Int64.MinValue
 
 let inline areEqualWithinPrecision value1 value2 precision =
     Assert.True(abs(value2 - value1) < precision)
+
+let inline fix64 (x:^a) : Fix64 =
+    let inline g x = ((^b or ^c):(static member op_Explicit : ^b -> ^c) x)
+    g x
 
 [<Fact>]
 let precision() =
@@ -57,7 +60,7 @@ let intToFix64AndBack() =
     let expecteds = [| Int32.MinValue; -1; 0; 1; Int32.MaxValue; |]
     for i = 0 to sources.Length - 1 do 
         let expected = expecteds.[i]
-        let f = Fix64.op_Explicit sources.[i] 
+        let f = fix64 sources.[i] 
         let actual = f |> int32
         Assert.Equal(expected, actual)
 
@@ -107,11 +110,10 @@ let noOverflowMultiplication() =
 
 [<Fact>]
 let multiplication() =
-    let terms = testCases |> Array.map Fix64.FromRaw
-    for i = 0 to terms.Length - 1 do
-        for j = 0 to terms.Length - 1 do
-            let x = terms.[i]
-            let y = terms.[j]
+    for i = 0 to testCases.Length - 1 do
+        for j = 0 to testCases.Length - 1 do
+            let x = testCases.[i]
+            let y = testCases.[j]
 
             let expected = (decimal x) * (decimal y)
             let expected = if expected > (decimal Fix64.MaxValue) then (decimal Fix64.MaxValue)
@@ -123,11 +125,10 @@ let multiplication() =
 
 [<Fact>]
 let division() =
-    let terms = testCases |> Array.map Fix64.FromRaw
-    for i = 0 to terms.Length - 1 do
-        for j = 0 to terms.Length - 1 do
-            let x = terms.[i]
-            let y = terms.[j]
+    for i = 0 to testCases.Length - 1 do
+        for j = 0 to testCases.Length - 1 do
+            let x = testCases.[i]
+            let y = testCases.[j]
 
             if y = Fix64.Zero then
                 Assert.Throws<DivideByZeroException>(fun () -> (x / y) |> ignore) |> ignore
@@ -150,8 +151,9 @@ let sign() =
         Assert.Equal(expected, actual)
 
 // TODO test unary minus
+//TODO implement log2, log10, log with http://www.claysturner.com/dsp/BinaryLogarithm.pdf 
 [<Fact>]
-let abs() =
+let abs_() =
     Assert.Equal(Fix64.MaxValue, abs(Fix64.MinValue))
     let sources = [| -Fix64.One; Fix64.Zero; Fix64.One; Fix64.MaxValue |]
     let expecteds = [| Fix64.One; Fix64.Zero; Fix64.One; Fix64.MaxValue |]
@@ -170,151 +172,92 @@ let fastAbs() =
         let expected = expecteds.[i]
         Assert.Equal(expected, actual)
 
+[<Fact>]
+let floor_() =
+    let sources = [| -5.1M; -1M; 0M; 1M; 5.1M |] |> Array.map Fix64.op_Explicit
+    let expecteds = [| -6M; -1M; 0M; 1M; 5M |] |> Array.map Fix64.op_Explicit
+    for i = 0 to sources.Length - 1 do
+        let actual = floor sources.[i]
+        let expected = expecteds.[i]
+        Assert.Equal(expected, actual)
 
-//[<Fact>]
-//let floor() {
-//    var sources = new[] { -5.1m, -1, 0, 1, 5.1m };
-//    var expecteds = new[] { -6m, -1, 0, 1, 5m };
-//    for (int i = 0; i < sources.Length; ++i) {
-//        var actual = (decimal)Fix64.Floor((Fix64)sources[i]);
-//        var expected = expecteds[i];
-//        Assert.AreEqual(expected, actual);
-//    }
-//}
-//
-//        [Test]
-//        public void Ceiling() {
-//            var sources = new[] { -5.1m, -1, 0, 1, 5.1m };
-//            var expecteds = new[] { -5m, -1, 0, 1, 6m };
-//            for (int i = 0; i < sources.Length; ++i) {
-//                var actual = (decimal)Fix64.Ceiling((Fix64)sources[i]);
-//                var expected = expecteds[i];
-//                Assert.AreEqual(expected, actual);
-//            }
-//
-//            Assert.AreEqual(Fix64.MaxValue, Fix64.Ceiling(Fix64.MaxValue));
-//        }
-//
-//        [Test]
-//        public void Round() {
-//            var sources = new[] { -5.5m, -5.1m, -4.5m, -4.4m, -1, 0, 1, 4.5m, 4.6m, 5.4m, 5.5m };
-//            var expecteds = new[] { -6m, -5m, -4m, -4m, -1, 0, 1, 4m, 5m, 5m, 6m };
-//            for (int i = 0; i < sources.Length; ++i) {
-//                var actual = (decimal)Fix64.Round((Fix64)sources[i]);
-//                var expected = expecteds[i];
-//                Assert.AreEqual(expected, actual);
-//            }
-//            Assert.AreEqual(Fix64.MaxValue, Fix64.Round(Fix64.MaxValue));
-//        }
-//
-//
-//        [Test]
-//        public void Sqrt() {
-//            for (int i = 0; i < m_testCases.Length; ++i) {
-//                var f = Fix64.FromRaw(m_testCases[i]);
-//                if (Fix64.Sign(f) < 0) {
-//                    Assert.Throws<ArgumentOutOfRangeException>(() => Fix64.Sqrt(f));
-//                }
-//                else {
-//                    var expected = Math.Sqrt((double)f);
-//                    var actual = (double)Fix64.Sqrt(f);
-//                    var delta = (decimal)Math.Abs(expected - actual);
-//                    Assert.LessOrEqual(delta, Fix64.Precision);
-//                }
-//            }
-//        }
-//
-//        [Test]
-//        public void Modulus() {
-//            var deltas = new List<decimal>();
-//            foreach (var operand1 in m_testCases) {
-//                foreach (var operand2 in m_testCases) {
-//                    var f1 = Fix64.FromRaw(operand1);
-//                    var f2 = Fix64.FromRaw(operand2);
-//
-//                    if (operand2 == 0) {
-//                        Assert.Throws<DivideByZeroException>(() => Ignore(f1 / f2));
-//                    }
-//                    else {
-//                        var d1 = (decimal)f1;
-//                        var d2 = (decimal)f2;
-//                        var actual = (decimal)(f1 % f2);
-//                        var expected = d1 % d2;
-//                        var delta = Math.Abs(expected - actual);
-//                        deltas.Add(delta);
-//                        Assert.LessOrEqual(delta, 60 * Fix64.Precision, string.Format("{0} % {1} = expected {2} but got {3}", f1, f2, expected, actual));
-//                    }
-//                }
-//            }
-//            Console.WriteLine("Max error: {0} ({1} times precision)", deltas.Max(), deltas.Max() / Fix64.Precision);
-//            Console.WriteLine("Average precision: {0} ({1} times precision)", deltas.Average(), deltas.Average() / Fix64.Precision);
-//            Console.WriteLine("failed: {0}%", deltas.Count(d => d > Fix64.Precision) * 100.0 / deltas.Count);
-//        }
-//
-//        [Test]
-//        public void SinBenchmark() {
-//            var deltas = new List<double>();
-//
-//            var swf = new Stopwatch();
-//            var swd = new Stopwatch();
-//
-//            // Restricting the range to from 0 to Pi/2
-//            for (var angle = 0.0; angle <= 2 * Math.PI ; angle += 0.000004) {
-//                var f = (Fix64)angle;
-//                swf.Start();
-//                var actualF = Fix64.Sin(f);
-//                swf.Stop();
-//                var actual = (double)actualF;
-//                swd.Start();
-//                var expectedD = Math.Sin(angle);
-//                swd.Stop();
-//                var expected = (double)expectedD;
-//                var delta = Math.Abs(expected - actual);
-//                deltas.Add(delta);
-//            }
-//            Console.WriteLine("Max error: {0} ({1} times precision)", deltas.Max(), deltas.Max() / (double)Fix64.Precision);
-//            Console.WriteLine("Average precision: {0} ({1} times precision)", deltas.Average(), deltas.Average() / (double)Fix64.Precision);
-//            Console.WriteLine("Fix64.Sin time = {0}ms, Math.Sin time = {1}ms", swf.ElapsedMilliseconds, swd.ElapsedMilliseconds);
-//        }
-//
-//        [Test]
-//        public void Sin() {
-//            Assert.True(Fix64.Sin(Fix64.Zero) == Fix64.Zero);
-//
-//            Assert.True(Fix64.Sin(Fix64.PiOver2) == Fix64.One);
-//            Assert.True(Fix64.Sin(Fix64.Pi) == Fix64.Zero);
-//            Assert.True(Fix64.Sin(Fix64.Pi + Fix64.PiOver2) == -Fix64.One);
-//            Assert.True(Fix64.Sin(Fix64.PiTimes2) == Fix64.Zero);
-//
-//            Assert.True(Fix64.Sin(-Fix64.PiOver2) == -Fix64.One);
-//            Assert.True(Fix64.Sin(-Fix64.Pi) == Fix64.Zero);
-//            Assert.True(Fix64.Sin(-Fix64.Pi - Fix64.PiOver2) == Fix64.One);
-//            Assert.True(Fix64.Sin(-Fix64.PiTimes2) == Fix64.Zero);
-//
-//
-//            for (double angle = -2 * Math.PI; angle <= 2 * Math.PI; angle += 0.0001) {
-//                var f = (Fix64)angle;
-//                var actualF = Fix64.Sin(f);
-//                var expected = (decimal)Math.Sin(angle);
-//                var delta = Math.Abs(expected - (decimal)actualF);
-//                Assert.LessOrEqual(delta, 3 * Fix64.Precision, string.Format("Sin({0}): expected {1} but got {2}", angle, expected, actualF));
-//            }
-//
-//            foreach (var val in m_testCases) {
-//                var f = Fix64.FromRaw(val);
-//                var actualF = Fix64.Sin(f);
-//                var expected = (decimal)Math.Sin((double)f);
-//                var delta = Math.Abs(expected - (decimal)actualF);
-//                Assert.LessOrEqual(delta, 0.003, string.Format("Sin({0}): expected {1} but got {2}", f, expected, actualF));
-//            }
-//
-//            Console.WriteLine("Max delta = {0}", m_testCases.Max(val => {
-//                var f = Fix64.FromRaw(val);
-//                var actualF = Fix64.Sin(f);
-//                var expected = (decimal)Math.Sin((double)f);
-//                return Math.Abs(expected - (decimal)actualF);
-//            }));
-//        }
+[<Fact>]
+let ceil_() =
+    let sources = [| -5.1M; -1M; 0M; 1M; 5.1M |] |> Array.map Fix64.op_Explicit
+    let expecteds = [| -5M; -1M; 0M; 1M; 6M |] |> Array.map Fix64.op_Explicit
+    for i = 0 to sources.Length - 1 do
+        let actual = ceil sources.[i]
+        let expected = expecteds.[i]
+        Assert.Equal(expected, actual)
+
+[<Fact>]
+let round_() =
+    let sources = [| -5.5M; -5.1M; -4.5M; -4.4M; -1M; 0M; 1M; 4.5M; 4.6M; 5.4M; 5.5M |] |> Array.map Fix64.op_Explicit
+    let expecteds = [| -6M; -5M; -4M; -4M; -1M; 0M; 1M; 4M; 5M; 5M; 6M |] |> Array.map Fix64.op_Explicit
+    for i = 0 to sources.Length - 1 do
+        let actual = round sources.[i]
+        let expected = expecteds.[i]
+        Assert.Equal(expected, actual)
+
+[<Fact>]
+let sqrt_() =
+    testCases 
+    |> Array.iter (fun f ->
+        if Fix64.Sign f < 0 then
+            Assert.Throws<ArgumentOutOfRangeException>(fun () -> Fix64.Sqrt f |> ignore) |> ignore
+        else
+            let expected = sqrt(float f)
+            let actual = float(sqrt f)
+            areEqualWithinPrecision (decimal expected) (decimal actual) Fix64.Precision)
+
+
+[<Fact>]
+let modulus() =
+    for i = 0 to testCases.Length - 1 do
+        for j = 0 to testCases.Length - 1 do
+            let f1 = testCases.[0]
+            let f2 = testCases.[1]
+
+            if f2 = Fix64.Zero then
+                Assert.Throws<DivideByZeroException>(fun () -> f1 % f2 |> ignore) |> ignore
+            else
+                let actual = f1 % f2
+                let expected = (decimal f1) % (decimal f2)
+                areEqualWithinPrecision (decimal actual) expected Fix64.Precision
+
+let trigPrecision input =
+    let i = float input
+    // Since our trigonometry algorithms begin with clamping the value
+    // to the range 0-2*PI using a modulo, the error is proportional to our
+    // precision on the value 2*PI times the number of times it fits in the input value.
+    
+    (1M + decimal(abs(i / (2. * Math.PI)))) * Fix64.Precision
+
+[<Fact>]
+let sin_() =
+    [|  Fix64.Zero, Fix64.Zero
+        Fix64.PiOver2, Fix64.One
+        Fix64.Pi, Fix64.Zero
+        Fix64.Pi + Fix64.PiOver2, -Fix64.One
+        Fix64.PiTimes2, Fix64.Zero
+        -Fix64.PiOver2, -Fix64.One
+        -Fix64.Pi, Fix64.Zero
+        -Fix64.Pi - Fix64.PiOver2, Fix64.One
+        -Fix64.PiTimes2, Fix64.Zero  |]
+    |> Array.iter(fun (actual, expected) -> Assert.Equal(expected, sin actual))
+    
+    for angle in -2. * Math.PI .. 0.0001 .. 2. * Math.PI do
+        let f = Fix64.op_Explicit angle
+        let actual = decimal(sin f)
+        let expected = decimal(sin angle)
+        let precision = trigPrecision f
+        areEqualWithinPrecision expected actual precision
+
+    for f in testCases do
+        let actual = decimal(sin f)
+        let expected = decimal(sin(float f))        
+        let precision = trigPrecision f
+        areEqualWithinPrecision expected actual precision
 //
 //        [Test]
 //        public void FastSin() {

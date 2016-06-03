@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FixMath.NET {
+namespace FixMath.NET
+{
 
     /// <summary>
     /// Represents a Q31.32 fixed-point number.
@@ -659,7 +653,7 @@ namespace FixMath.NET {
                 writer.Write(
 @"namespace FixMath.NET {
     partial struct Fix64 {
-        public static readonly long[] SinLut = new[] {");
+        internal static readonly long[] SinLut = new[] {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i) {
                     var angle = i * Math.PI * 0.5 / (LUT_SIZE - 1);
@@ -684,7 +678,7 @@ namespace FixMath.NET {
                 writer.Write(
 @"namespace FixMath.NET {
     partial struct Fix64 {
-        public static readonly long[] TanLut = new[] {");
+        internal static readonly long[] TanLut = new[] {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i) {
                     var angle = i * Math.PI * 0.5 / (LUT_SIZE - 1);
