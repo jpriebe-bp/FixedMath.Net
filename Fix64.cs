@@ -4,16 +4,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FixMath.NET {
 
     /// <summary>
     /// Represents a Q31.32 fixed-point number.
-    /// </summary>
+    /// </summary> 
     public partial struct Fix64 : IEquatable<Fix64>, IComparable<Fix64> {
         readonly long m_rawValue;
 
@@ -263,7 +261,7 @@ namespace FixMath.NET {
             return new Fix64(sum);
         }
 
-        [MethodImplAttribute(MethodImplOptions.AggressiveInlining)] 
+        //[MethodImplAttribute(MethodImplOptions.AggressiveInlining)] 
         static int CountLeadingZeroes(ulong x) {
             int result = 0;
             while ((x & 0xF000000000000000) == 0) { result += 4; x <<= 4; }
@@ -486,7 +484,7 @@ namespace FixMath.NET {
 
 
 
-        [MethodImplAttribute(MethodImplOptions.AggressiveInlining)] 
+        //[MethodImplAttribute(MethodImplOptions.AggressiveInlining)] 
         static long ClampSinValue(long angle, out bool flipHorizontal, out bool flipVertical) {
             // Clamp value to 0 - 2*PI using modulo; this is very slow but there's no better way AFAIK
             var clamped2Pi = angle % PI_TIMES_2;
