@@ -523,6 +523,21 @@ namespace FixMath.NET {
             return Sin(new Fix64(rawAngle));
         }
 
+        public static Fix64 Acos(Fix64 x)
+        {
+            return Atan2(Sqrt((One + x) * (One - x)), x);
+        }
+
+        public static Fix64 Asin(Fix64 x)
+        {
+            return Atan2(x, Sqrt((One + x) * (One - x)));
+        }
+
+        public static Fix64 Atan(Fix64 x)
+        {
+            return Atan2(x, One);
+        }
+
         /// <summary>
         /// Returns a rough approximation of the cosine of x.
         /// See FastSin for more details.
