@@ -30,6 +30,10 @@ namespace FixMath.NET {
         public static readonly Fix64 PiInv = (Fix64)0.3183098861837906715377675267M;
         public static readonly Fix64 PiOver2Inv = (Fix64)0.6366197723675813430755350535M;
 
+        // Deg-Rad transformation (taken from Unity)
+        public static readonly Fix64 Deg2Rad = (Fix64)0.0174532924F;
+        public static readonly Fix64 Rad2Deg = (Fix64)57.29578F;
+
         static readonly Fix64 LutInterval = (Fix64)(LUT_SIZE - 1) / PiOver2;
         const long MAX_VALUE = long.MaxValue;
         const long MIN_VALUE = long.MinValue;
